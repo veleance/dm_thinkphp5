@@ -1,5 +1,7 @@
 ## Dm_thinkphp5是一个关于thinkphp5.0适配达梦数据库系统类库改造
 
+thinkphp5.0 添加达梦数据库驱动
+
          thinkphp        关于达梦数据库的相关封装
          database.php    配置的相关参考
 
