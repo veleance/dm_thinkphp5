@@ -20,9 +20,9 @@ class Dm extends Connection
      */
     protected function parseDsn($config)
     {
-        $dsn = 'dm:';
+        $dsn = 'dm:host=';
         if (!empty($config['hostname'])) {
-            $dsn .=  $config['hostname'] . ($config['hostport'] ? ':' . $config['hostport'] : '') . '/';
+            $dsn .=  $config['hostname'] . ($config['hostport'] ? ':' . $config['hostport'] : '') ; // . '/'
         }
         if (!empty($config['charset'])) {
             $dsn .= ';charset=' . $config['charset'];
@@ -40,8 +40,7 @@ class Dm extends Connection
     public function getFields($tableName)
     {
         list($tableName) = explode(' ', $tableName);
-        $sql             = "select a.column_name,data_type,DECODE (nullable, 'Y', 0, 1) notnull,data_default, DECODE (A .column_name,b.column_name,1,0) pk from all_tab_columns a,(select column_name from all_constraints c, all_cons_columns col where c.constraint_name = col.constraint_name and c.constraint_type = 'P' and c.table_name = '" . strtoupper($tableName) . "' ) b where table_name = '" . strtoupper($tableName) . "' and a.column_name = b.column_name (+)";
-
+        $sql             = "select a.column_name,data_type,DECODE (nullable, 'Y', 0, 1) notnull,data_default, DECODE (A .column_name,b.column_name,1,0) pk from all_tab_columns a,(select column_name from all_constraints c, all_cons_columns col where c.constraint_name = col.constraint_name and c.constraint_type = 'P' and c.table_name = '" . strtolower($tableName) . "' ) b where table_name = '" . strtolower($tableName) . "' and a.column_name = b.column_name (+)";
         $pdo    = $this->query($sql, [], false, true);
         $result = $pdo->fetchAll(PDO::FETCH_ASSOC);
         $info   = [];

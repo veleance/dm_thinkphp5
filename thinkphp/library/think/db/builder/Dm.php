@@ -106,13 +106,18 @@ class Dm extends Builder
             throw new Exception('not support data:' . $key);
         }
         if ('*' != $key && ($strict || !preg_match('/[,\'\"\*\(\)`.\s]/', $key))) {
-            $key = '`' . $key . '`';
+            $key = '"' . $key . '"';
         }
         if (isset($table)) {
             if (strpos($table, '.')) {
-                $table = str_replace('.', '`.`', $table);
+                $table = str_replace('.', '"."', $table);
             }
-            $key = '`' . $table . '`.' . $key;
+            $key = '"' . $table . '".' . $key;
+        }else{
+            if (strpos($key, '.')) {
+                list($table, $key) = explode('.', $key, 2);
+                $key = '"' . $table . '".'.str_replace(' ', '" "', '"' . $key . '"');
+            }
         }
         return $key;
     }
@@ -133,7 +138,7 @@ class Dm extends Builder
             if (!is_numeric($key)) {
                 $key    = $this->parseSqlTable($key);
                 $aliasTable  = $this->parseKey($key) . ' ' . (isset($options['alias'][$table]) ? $this->parseKey($options['alias'][$table]) : $this->parseKey($table));
-                $item[] =  $database.'.'.$aliasTable;
+                $item[] =  '"'.$database.'"'.'.'.$aliasTable;
             } else {
                 $table = $this->parseSqlTable($table);
                 if (isset($options['alias'][$table])) {
@@ -141,7 +146,7 @@ class Dm extends Builder
                 } else {
                     $aliasTable = $this->parseKey($table);
                 }
-                $item[] =  $database.'.'.$aliasTable;
+                $item[] =  '"'.$database.'"'.'.'.$aliasTable;
             }
         }
         return implode(',', $item);
