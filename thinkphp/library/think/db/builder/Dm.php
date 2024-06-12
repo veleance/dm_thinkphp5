@@ -72,13 +72,6 @@ class Dm extends Builder
         }
         return $key;
     }*/
-    /**
-     * 字段和表名处理
-     * @access protected
-     * @param mixed  $key
-     * @param array  $options
-     * @return string
-     */
     protected function parseKey($key, $options = [], $strict = false)
     {
         if (is_numeric($key)) {
@@ -106,18 +99,13 @@ class Dm extends Builder
             throw new Exception('not support data:' . $key);
         }
         if ('*' != $key && ($strict || !preg_match('/[,\'\"\*\(\)`.\s]/', $key))) {
-            $key = '"' . $key . '"';
+            $key = '`' . $key . '`';
         }
         if (isset($table)) {
             if (strpos($table, '.')) {
-                $table = str_replace('.', '"."', $table);
+                $table = str_replace('.', '`.`', $table);
             }
-            $key = '"' . $table . '".' . $key;
-        }else{
-            if (strpos($key, '.')) {
-                list($table, $key) = explode('.', $key, 2);
-                $key = '"' . $table . '".'.str_replace(' ', '" "', '"' . $key . '"');
-            }
+            $key = '`' . $table . '`.' . $key;
         }
         return $key;
     }
