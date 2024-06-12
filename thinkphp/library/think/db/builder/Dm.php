@@ -126,7 +126,7 @@ class Dm extends Builder
             if (!is_numeric($key)) {
                 $key    = $this->parseSqlTable($key);
                 $aliasTable  = $this->parseKey($key) . ' ' . (isset($options['alias'][$table]) ? $this->parseKey($options['alias'][$table]) : $this->parseKey($table));
-                $item[] =  '"'.$database.'"'.'.'.$aliasTable;
+                // $item[] =  '"'.$database.'"'.'.'.$aliasTable;
             } else {
                 $table = $this->parseSqlTable($table);
                 if (isset($options['alias'][$table])) {
@@ -134,8 +134,9 @@ class Dm extends Builder
                 } else {
                     $aliasTable = $this->parseKey($table);
                 }
-                $item[] =  '"'.$database.'"'.'.'.$aliasTable;
+                // $item[] =  '"'.$database.'"'.'.'.$aliasTable;
             }
+            $item[]  = $database.'.'.$aliasTable;
         }
         return implode(',', $item);
     }

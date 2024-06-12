@@ -3,7 +3,9 @@
 namespace think\db\connector;
 
 use PDO;
+use think\Db;
 use think\db\Connection;
+use think\exception\PDOException;
 
 /**
  * Dm数据库驱动
@@ -80,6 +82,72 @@ class Dm extends Connection
         }
 
         return $info;
+    }
+
+    /**
+     * 执行查询 返回数据集
+     * @access public
+     * @param string        $sql sql指令
+     * @param array         $bind 参数绑定
+     * @param bool          $master 是否在主服务器读操作
+     * @param bool          $pdo 是否返回PDO对象
+     * @return mixed
+     * @throws PDOException
+     * @throws \Exception
+     */
+    public function query($sql, $bind = [], $master = false, $pdo = false)
+    {
+        $this->initConnect($master);
+        if (!$this->linkID) {
+            return false;
+        }
+
+        // 记录SQL语句
+        $this->queryStr = $sql;
+        if ($bind) {
+            $this->bind = $bind;
+        }
+        if (strpos($sql, '"') !== false) {
+            $sql = str_replace('"','\'',$sql);
+        }
+        Db::$queryTimes++;
+        try {
+            // 调试开始
+            $this->debug(true);
+
+            // 预处理
+            $this->PDOStatement = $this->linkID->prepare($sql);
+
+            // 是否为存储过程调用
+            $procedure = in_array(strtolower(substr(trim($sql), 0, 4)), ['call', 'exec']);
+            // 参数绑定
+            if ($procedure) {
+                $this->bindParam($bind);
+            } else {
+                $this->bindValue($bind);
+            }
+            // 执行查询
+            $this->PDOStatement->execute();
+            // 调试结束
+            $this->debug(false, '', $master);
+            // 返回结果集
+            return $this->getResult($pdo, $procedure);
+        } catch (\PDOException $e) {
+            if ($this->isBreak($e)) {
+                return $this->close()->query($sql, $bind, $master, $pdo);
+            }
+            throw new PDOException($e, $this->config, $this->getLastsql());
+        } catch (\Throwable $e) {
+            if ($this->isBreak($e)) {
+                return $this->close()->query($sql, $bind, $master, $pdo);
+            }
+            throw $e;
+        } catch (\Exception $e) {
+            if ($this->isBreak($e)) {
+                return $this->close()->query($sql, $bind, $master, $pdo);
+            }
+            throw $e;
+        }
     }
 
     /**
