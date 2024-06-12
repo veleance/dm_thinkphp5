@@ -14,6 +14,10 @@ class Dm extends Connection
 {
     protected $builder = '\\think\\db\\builder\\Dm';
 
+    protected $keyword = [
+        ' verify '
+    ];
+
     /**
      * 解析pdo连接的dsn信息
      * @access protected
@@ -60,7 +64,6 @@ class Dm extends Connection
                 ];
             }
         }
-
         return $this->fieldCase($info);
     }
 
@@ -109,6 +112,18 @@ class Dm extends Connection
         }
         if (strpos($sql, '"') !== false) {
             $sql = str_replace('"','\'',$sql);
+        }
+        if (strpos($sql, 'CONVERT') !== false && preg_match('/CONVERT\((.*?) USING/', $sql, $matches)) {
+            $replacement = "NLSSORT($matches[1],'NLS_SORT = SCHINESE_PINYIN_M')";
+            $sql = preg_replace('/CONVERT\((.*?) USING gbk\)/', $replacement, $sql);
+        }
+        if (!empty($this->keyword)) {
+            foreach ($this->keyword as $v) {
+                if (strpos($sql, $v) !== false) {
+                    $v = trim($v);
+                    $sql = str_replace($v,' '."`$v`".' ',$sql);
+                }
+            }
         }
         Db::$queryTimes++;
         try {

@@ -10,7 +10,9 @@ use think\db\Query;
  */
 class Dm extends Builder
 {
-    protected $selectSql = 'SELECT * FROM (SELECT thinkphp.*, rownum AS numrow FROM (SELECT  %DISTINCT% %FIELD% FROM %TABLE%%JOIN%%WHERE%%GROUP%%HAVING%%ORDER%) thinkphp ) %LIMIT%%COMMENT%';
+    //protected $selectSql = 'SELECT * FROM (SELECT thinkphp.*, rownum AS numrow FROM (SELECT  %DISTINCT% %FIELD% FROM %TABLE%%JOIN%%WHERE%%GROUP%%HAVING%%ORDER%) thinkphp ) %LIMIT%%COMMENT%';
+
+    protected $selectSql = 'SELECT %DISTINCT% %FIELD% FROM %TABLE%%JOIN%%WHERE%%GROUP%%HAVING%%ORDER% %LIMIT%%COMMENT%';
 
     /**
      * limit分析
@@ -22,18 +24,19 @@ class Dm extends Builder
     protected function parseLimit($limit)
     {
         $limitStr = '';
-
         if (!empty($limit)) {
             $limit = explode(',', $limit);
-
             if (count($limit) > 1) {
-                $limitStr = "(numrow>" . $limit[0] . ") AND (numrow<=" . ($limit[0] + $limit[1]) . ")";
+                // $limitStr = "(numrow>" . $limit[0] . ") AND (numrow<=" . ($limit[0] + $limit[1]) . ")";
+                $limitStr .= ' LIMIT ' . $limit[1] . ' OFFSET ' . $limit[0] . ' ';
             } else {
-                $limitStr = "(numrow>0 AND numrow<=" . $limit[0] . ")";
+                // $limitStr = "(numrow>0 AND numrow<=" . $limit[0] . ")";
+                $limitStr .= ' LIMIT ' . $limit[0] . ' ';
             }
         }
 
-        return $limitStr ? ' WHERE ' . $limitStr : '';
+        // return $limitStr ? ' WHERE ' . $limitStr : '';
+        return $limitStr;
     }
 
 
